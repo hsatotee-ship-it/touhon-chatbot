@@ -13,8 +13,11 @@ LOCAL_STORAGE_DIR = Path("/app/uploads")
 def _is_gcs_configured() -> bool:
     return bool(
         settings.gcs_bucket_name
-        and settings.google_application_credentials
-        and settings.google_application_credentials != "/path/to/service-account.json"
+        and (
+            (settings.google_application_credentials
+             and settings.google_application_credentials != "/path/to/service-account.json")
+            or settings.google_credentials_json
+        )
     )
 
 
