@@ -20,13 +20,20 @@ def upload_to_storage(file_bytes: bytes, destination_path: str) -> str:
 
 def extract_text_from_pdf(file_bytes: bytes) -> tuple[str, int]:
     """Extract text from PDF using PyPDF2."""
+    logger.info(f"Reading PDF ({len(file_bytes)} bytes)")
     reader = PdfReader(io.BytesIO(file_bytes))
+    logger.info(f"PDF has {len(reader.pages)} pages")
     all_text = []
-    for page in reader.pages:
+    for i, page in enumerate(reader.pages):
         text = page.extract_text()
         if text:
             all_text.append(text)
-    return "\n".join(all_text), len(reader.pages)
+            logger.info(f"Page {i+1}: extracted {len(text)} chars")
+        else:
+            logger.warning(f"Page {i+1}: no text extracted (may be scanned image)")
+    total_text = "\n".join(all_text)
+    logger.info(f"Total extracted: {len(total_text)} chars from {len(reader.pages)} pages")
+    return total_text, len(reader.pages)
 
 
 def chunk_text(text: str, chunk_size: int = 500, overlap: int = 100) -> list[dict]:

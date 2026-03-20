@@ -1,3 +1,5 @@
+import logging
+import traceback
 import uuid
 from datetime import datetime
 
@@ -12,30 +14,39 @@ from app.models.tables import Document, DocumentChunk, User
 from app.services.embedding import get_embedding
 from app.services.ocr import chunk_text, extract_text_from_pdf, upload_to_storage
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/api/documents", tags=["documents"])
 
 
 async def process_document(document_id: uuid.UUID, file_bytes: bytes):
-    """Background task: OCR → chunk → embed → store."""
+    """Background task: PDF text extraction → chunk → embed → store."""
+    logger.info(f"[doc={document_id}] Starting document processing ({len(file_bytes)} bytes)")
     async with AsyncSessionLocal() as db:
         doc = await db.get(Document, document_id)
         if not doc:
+            logger.error(f"[doc={document_id}] Document not found in DB")
             return
 
         try:
             doc.status = "processing"
             await db.commit()
 
-            # OCR
+            # PDF text extraction
+            logger.info(f"[doc={document_id}] Extracting text from PDF")
             ocr_text, page_count = extract_text_from_pdf(file_bytes)
+            logger.info(f"[doc={document_id}] Extracted {len(ocr_text)} chars from {page_count} pages")
             doc.ocr_text = ocr_text
             doc.page_count = page_count
 
             # Chunk
+            logger.info(f"[doc={document_id}] Chunking text")
             chunks = chunk_text(ocr_text)
+            logger.info(f"[doc={document_id}] Created {len(chunks)} chunks")
 
             # Embed and store
             for chunk_data in chunks:
+                logger.info(f"[doc={document_id}] Embedding chunk {chunk_data['index']}/{len(chunks)-1}")
                 embedding = get_embedding(chunk_data["content"])
                 db_chunk = DocumentChunk(
                     document_id=document_id,
@@ -49,12 +60,14 @@ async def process_document(document_id: uuid.UUID, file_bytes: bytes):
             doc.status = "completed"
             doc.updated_at = datetime.utcnow()
             await db.commit()
+            logger.info(f"[doc={document_id}] Processing completed successfully")
 
         except Exception as e:
+            logger.error(f"[doc={document_id}] Processing failed: {type(e).__name__}: {e}")
+            logger.error(traceback.format_exc())
             doc.status = "failed"
             doc.updated_at = datetime.utcnow()
             await db.commit()
-            raise
 
 
 @router.post("/upload", response_model=DocumentResponse, status_code=status.HTTP_201_CREATED)
