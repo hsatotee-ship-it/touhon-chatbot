@@ -1,7 +1,7 @@
 import type { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
+const BACKEND_URL = "https://touhon-chatbot-production.up.railway.app";
 
 export const authOptions: AuthOptions = {
   providers: [
