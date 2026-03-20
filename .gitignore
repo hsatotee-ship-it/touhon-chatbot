@@ -1,0 +1,24 @@
+# Environment
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Node
+node_modules/
+
+# Next.js
+.next/
+
+# Uploads
+backend/uploads/documents/*
+!backend/uploads/documents/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+
+# Claude
+.claude/
