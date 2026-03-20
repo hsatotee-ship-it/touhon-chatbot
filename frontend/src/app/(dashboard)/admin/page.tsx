@@ -3,8 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
 import { Users, FileText, Activity, Plus, Trash2 } from "lucide-react";
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+import { BACKEND_URL } from "@/lib/api";
 
 interface User {
   id: string;

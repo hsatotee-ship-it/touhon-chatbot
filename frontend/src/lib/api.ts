@@ -1,4 +1,4 @@
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+export const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
 export async function apiFetch(path: string, options: RequestInit = {}) {
   const res = await fetch(`${BACKEND_URL}${path}`, {

@@ -4,8 +4,7 @@ import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Send } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+import { BACKEND_URL } from "@/lib/api";
 
 interface Message {
   role: "user" | "assistant";

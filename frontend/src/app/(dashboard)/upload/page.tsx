@@ -4,8 +4,7 @@ import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Upload, FileText, CheckCircle, Clock, XCircle, Trash2 } from "lucide-react";
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+import { BACKEND_URL } from "@/lib/api";
 
 interface Document {
   id: string;
