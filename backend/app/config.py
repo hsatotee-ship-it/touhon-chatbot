@@ -8,7 +8,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/touhon_db"
     backend_secret_key: str = "change-me"
-    cors_origins: str = "http://localhost:3000"
+    cors_origins: str = "http://localhost:3000,https://beneficial-heart-production.up.railway.app"
 
     anthropic_api_key: str = ""
     google_application_credentials: str = ""

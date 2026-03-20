@@ -22,8 +22,8 @@ async def login(body: LoginRequest, response: Response, db: AsyncSession = Depen
         key="access_token",
         value=token,
         httponly=True,
-        secure=False,  # Set True in production with HTTPS
-        samesite="lax",
+        secure=True,
+        samesite="none",
         max_age=8 * 3600,
     )
 
