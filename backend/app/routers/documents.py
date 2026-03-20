@@ -10,7 +10,7 @@ from app.dependencies import get_current_user
 from app.models.schemas import DocumentDetail, DocumentResponse
 from app.models.tables import Document, DocumentChunk, User
 from app.services.embedding import get_embedding
-from app.services.ocr import chunk_text, extract_text_from_pdf, upload_to_gcs
+from app.services.ocr import chunk_text, extract_text_from_pdf, upload_to_storage
 
 router = APIRouter(prefix="/api/documents", tags=["documents"])
 
@@ -74,8 +74,8 @@ async def upload_document(
     doc_id = uuid.uuid4()
     gcs_path = f"documents/{user.id}/{doc_id}/{file.filename}"
 
-    # Upload to GCS
-    gcs_uri = upload_to_gcs(file_bytes, gcs_path)
+    # Upload to storage
+    gcs_uri = upload_to_storage(file_bytes, gcs_path)
 
     # Create DB record
     document = Document(

@@ -1,37 +1,16 @@
 import io
 import logging
-import os
 from pathlib import Path
 
-from app.config import settings
+from PyPDF2 import PdfReader
 
 logger = logging.getLogger(__name__)
 
 LOCAL_STORAGE_DIR = Path("/app/uploads")
 
 
-def _is_gcs_configured() -> bool:
-    return bool(
-        settings.gcs_bucket_name
-        and (
-            (settings.google_application_credentials
-             and settings.google_application_credentials != "/path/to/service-account.json")
-            or settings.google_credentials_json
-        )
-    )
-
-
-def upload_to_gcs(file_bytes: bytes, destination_path: str) -> str:
-    if _is_gcs_configured():
-        from google.cloud import storage as gcs_storage
-
-        client = gcs_storage.Client()
-        bucket = client.bucket(settings.gcs_bucket_name)
-        blob = bucket.blob(destination_path)
-        blob.upload_from_string(file_bytes, content_type="application/pdf")
-        return f"gs://{settings.gcs_bucket_name}/{destination_path}"
-
-    # Local storage fallback
+def upload_to_storage(file_bytes: bytes, destination_path: str) -> str:
+    """Save uploaded PDF to local storage."""
     local_path = LOCAL_STORAGE_DIR / destination_path
     local_path.parent.mkdir(parents=True, exist_ok=True)
     local_path.write_bytes(file_bytes)
@@ -40,34 +19,7 @@ def upload_to_gcs(file_bytes: bytes, destination_path: str) -> str:
 
 
 def extract_text_from_pdf(file_bytes: bytes) -> tuple[str, int]:
-    """Extract text from PDF. Uses Google Cloud Vision if configured, otherwise PyPDF2."""
-    if _is_gcs_configured():
-        from google.cloud import vision
-
-        client = vision.ImageAnnotatorClient()
-        input_config = vision.InputConfig(
-            content=file_bytes,
-            mime_type="application/pdf",
-        )
-        feature = vision.Feature(type_=vision.Feature.Type.DOCUMENT_TEXT_DETECTION)
-        request = vision.AnnotateFileRequest(
-            input_config=input_config,
-            features=[feature],
-        )
-        response = client.batch_annotate_files(requests=[request])
-
-        all_text = []
-        page_count = 0
-        for file_response in response.responses:
-            for page_response in file_response.responses:
-                page_count += 1
-                if page_response.full_text_annotation:
-                    all_text.append(page_response.full_text_annotation.text)
-        return "\n".join(all_text), page_count
-
-    # PyPDF2 fallback
-    from PyPDF2 import PdfReader
-
+    """Extract text from PDF using PyPDF2."""
     reader = PdfReader(io.BytesIO(file_bytes))
     all_text = []
     for page in reader.pages:
