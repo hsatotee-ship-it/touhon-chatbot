@@ -13,23 +13,12 @@ def _get_client() -> anthropic.Anthropic:
 
 
 def get_embedding(text: str) -> list[float]:
-    """Get embedding vector using Anthropic's Voyage embeddings via the API.
+    """Get embedding vector.
 
-    Falls back to a simple hash-based embedding for development/testing.
+    Uses a deterministic hash-based embedding as a placeholder.
+    For production, integrate a proper embedding model (e.g. Voyage).
     """
-    try:
-        client = _get_client()
-        # Use Voyage embeddings through Anthropic's API
-        response = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=1,
-            messages=[{"role": "user", "content": text[:100]}],
-        )
-        # For production, integrate a proper embedding model.
-        # Using a deterministic hash embedding as a placeholder.
-        return _hash_embedding(text)
-    except Exception:
-        return _hash_embedding(text)
+    return _hash_embedding(text)
 
 
 def _hash_embedding(text: str, dim: int = 1024) -> list[float]:

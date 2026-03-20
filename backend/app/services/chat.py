@@ -63,12 +63,17 @@ def generate_answer(
             messages.append({"role": msg["role"], "content": msg["content"]})
     messages.append({"role": "user", "content": query})
 
-    response = client.messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=2048,
-        system=system,
-        messages=messages,
-    )
+    try:
+        response = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=2048,
+            system=system,
+            messages=messages,
+        )
+        answer = response.content[0].text
+    except anthropic.AuthenticationError:
+        raise ValueError("ANTHROPIC_API_KEY が未設定または無効です")
+    except anthropic.APIError as e:
+        raise ValueError(f"Claude API エラー: {e.message}")
 
-    answer = response.content[0].text
     return answer, sources

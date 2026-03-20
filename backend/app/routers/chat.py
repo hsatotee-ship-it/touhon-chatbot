@@ -45,7 +45,10 @@ async def chat(
     ]
 
     # Generate answer
-    answer, sources = generate_answer(body.message, chunks, history)
+    try:
+        answer, sources = generate_answer(body.message, chunks, history)
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
     # Save messages
     user_msg = ChatMessage(session_id=session.id, role="user", content=body.message)
